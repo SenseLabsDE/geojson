@@ -140,7 +140,7 @@ impl<R: Read> FeatureReader<R> {
     ///     }
     /// }
     /// ```
-    ///
+    /// 
     /// If you're not using [`geo-types`](geo_types), you can deserialize to a `geojson::Geometry` instead.
     /// ```rust,ignore
     /// use serde::Deserialize;

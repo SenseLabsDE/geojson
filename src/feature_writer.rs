@@ -146,7 +146,7 @@ impl<W: Write> FeatureWriter<W> {
     ///
     /// assert_eq_json(expected_output, &output);
     /// ```
-    ///
+    /// 
     /// If you're not using [`geo-types`](geo_types), you can deserialize to a `geojson::Geometry` instead.
     /// ```rust,ignore
     /// use serde::Deserialize;

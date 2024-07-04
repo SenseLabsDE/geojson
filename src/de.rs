@@ -18,7 +18,7 @@
 //!     ...
 //! }
 //! ```
-//!
+//! 
 //! All fields in your struct other than `geometry` will be deserialized from the `properties` of the
 //! GeoJSON Feature.
 //!
@@ -68,7 +68,7 @@
 //! assert_eq!("Uptown", my_structs[1].name);
 //! assert_eq!(33.3, my_structs[1].geometry.x());
 //! ```
-//!
+//! 
 //! # Reading *and* Writing GeoJSON
 //!
 //! This module is only concerned with _reading in_ GeoJSON. If you'd also like to write GeoJSON

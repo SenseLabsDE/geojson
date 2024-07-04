@@ -18,7 +18,7 @@
 //!     ...
 //! }
 //! ```
-//!
+//! 
 //! All fields in your struct other than `geometry` will be serialized as `properties` of the
 //! GeoJSON Feature.
 //!
@@ -82,7 +82,7 @@
 //! #
 //! # assert_eq!(output_geojson, expected_geojson);
 //! ```
-//!
+//! 
 //! # Reading *and* Writing GeoJSON
 //!
 //! This module is only concerned with Writing out GeoJSON. If you'd also like to reading GeoJSON,
@@ -99,8 +99,11 @@
 use crate::{JsonObject, JsonValue, Result};
 
 use serde::{ser::Error, Serialize, Serializer};
+use serde_json::ser::Formatter;
 
 use std::{convert::TryInto, io};
+
+const DEFAULT_FORMATTER: serde_json::ser::CompactFormatter = serde_json::ser::CompactFormatter;
 
 /// Serialize a single data structure to a GeoJSON Feature string.
 ///
@@ -137,7 +140,15 @@ pub fn to_feature_collection_string<T>(values: &[T]) -> Result<String>
 where
     T: Serialize,
 {
-    let vec = to_feature_collection_byte_vec(values)?;
+    to_feature_collection_string_with_fmt(values, DEFAULT_FORMATTER)
+}
+
+pub fn to_feature_collection_string_with_fmt<T, F>(values: &[T], formatter: F) -> Result<String>
+where
+    T: Serialize,
+    F: Formatter,
+{
+    let vec = to_feature_collection_byte_vec_with_fmt(values, formatter)?;
     let string = unsafe {
         // We do not emit invalid UTF-8.
         String::from_utf8_unchecked(vec)
@@ -174,8 +185,16 @@ pub fn to_feature_collection_byte_vec<T>(values: &[T]) -> Result<Vec<u8>>
 where
     T: Serialize,
 {
+    to_feature_collection_byte_vec_with_fmt(values, DEFAULT_FORMATTER)
+}
+
+pub fn to_feature_collection_byte_vec_with_fmt<T, F>(values: &[T], formatter: F) -> Result<Vec<u8>>
+where
+    T: Serialize,
+    F: Formatter,
+{
     let mut writer = Vec::with_capacity(128);
-    to_feature_collection_writer(&mut writer, values)?;
+    to_feature_collection_writer_with_fmt(&mut writer, formatter, values)?;
     Ok(writer)
 }
 
@@ -211,9 +230,22 @@ where
     W: io::Write,
     T: Serialize,
 {
+    to_feature_collection_writer_with_fmt(writer, DEFAULT_FORMATTER, features)
+}
+
+pub fn to_feature_collection_writer_with_fmt<W, F, T>(
+    writer: W,
+    formatter: F,
+    features: &[T],
+) -> Result<()>
+where
+    W: io::Write,
+    F: Formatter,
+    T: Serialize,
+{
     use serde::ser::SerializeMap;
 
-    let mut ser = serde_json::Serializer::new(writer);
+    let mut ser = serde_json::Serializer::with_formatter(writer, formatter);
     let mut map = ser.serialize_map(Some(2))?;
     map.serialize_entry("type", "FeatureCollection")?;
     map.serialize_entry("features", &Features::new(features))?;
